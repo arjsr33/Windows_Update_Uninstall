@@ -20,10 +20,10 @@ if %errorLevel% neq 0 (
 )
 
 echo Showing last 15 recently installed updates (newest first)...
-echo NOTE: This list excludes all routine Defender and Security platform updates.
+echo NOTE: This list excludes routine Security Intelligence (Defender) updates.
 echo.
-REM --- FINAL VERSION: Uses a better filter to exclude all definition-style updates ---
-powershell -NoProfile -Command "$Session = New-Object -ComObject 'Microsoft.Update.Session'; $Searcher = $Session.CreateUpdateSearcher(); $HistoryCount = $Searcher.GetTotalHistoryCount(); $Searcher.QueryHistory(0, $HistoryCount) | Where-Object { $_.Title -notlike '*Security Intelligence*' -and $_.Title -notlike '*Definition Update*' -and $_.Title -notlike '*Security Platform*' -and $_.Operation -eq 1 -and $_.ResultCode -eq 2 } | ForEach-Object { [PSCustomObject]@{ HotFixID = if ($_.Title -match '(KB\d+)') { $matches[0] } else { 'N/A' }; Description = $_.Title; InstalledOn = $_.Date } } | Sort-Object InstalledOn -Descending | Select-Object -First 15 | Format-Table -AutoSize"
+REM --- Use modern PowerShell command for an accurate list, excluding Defender updates ---
+powershell -NoProfile -Command "$Session = New-Object -ComObject 'Microsoft.Update.Session'; $Searcher = $Session.CreateUpdateSearcher(); $HistoryCount = $Searcher.GetTotalHistoryCount(); $Searcher.QueryHistory(0, $HistoryCount) | Where-Object { $_.Title -notlike '*Security Intelligence*' -and $_.Title -match 'KB\d+' -and $_.Operation -eq 1 -and $_.ResultCode -eq 2 } | ForEach-Object { [PSCustomObject]@{ HotFixID = if ($_.Title -match '(KB\d+)') { $matches[0] } else { 'N/A' }; Description = $_.Title; InstalledOn = $_.Date } } | Sort-Object InstalledOn -Descending | Select-Object -First 15 | Format-Table -AutoSize"
 echo.
 echo ==========================================
 echo.
@@ -65,7 +65,6 @@ echo.
 if "%found%"=="0" (
     echo ==========================================
     echo  WARNING: None of the target updates were found!
-    echo  This is correct as they are not in the installation history.
     echo  Nothing to remove.
     echo ==========================================
     pause
