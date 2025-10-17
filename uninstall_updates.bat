@@ -20,9 +20,10 @@ if %errorLevel% neq 0 (
 )
 
 echo Showing last 15 recently installed updates (newest first)...
-echo NOTE: This list excludes routine Security Intelligence (Defender) updates.
+echo NOTE: This list excludes all routine Defender and Security platform updates.
 echo.
-powershell -NoProfile -Command "$Session = New-Object -ComObject 'Microsoft.Update.Session'; $Searcher = $Session.CreateUpdateSearcher(); $HistoryCount = $Searcher.GetTotalHistoryCount(); $Searcher.QueryHistory(0, $HistoryCount) | Where-Object { $_.Title -notlike '*Security Intelligence*' -and $_.Title -match 'KB\d+' -and $_.Operation -eq 1 -and $_.ResultCode -eq 2 } | ForEach-Object { [PSCustomObject]@{ HotFixID = if ($_.Title -match '(KB\d+)') { $matches[0] } else { 'N/A' }; Description = $_.Title; InstalledOn = $_.Date } } | Sort-Object InstalledOn -Descending | Select-Object -First 15 | Format-Table -AutoSize"
+REM --- FINAL VERSION: Uses a better filter to exclude all definition-style updates ---
+powershell -NoProfile -Command "$Session = New-Object -ComObject 'Microsoft.Update.Session'; $Searcher = $Session.CreateUpdateSearcher(); $HistoryCount = $Searcher.GetTotalHistoryCount(); $Searcher.QueryHistory(0, $HistoryCount) | Where-Object { $_.Title -notlike '*Security Intelligence*' -and $_.Title -notlike '*Definition Update*' -and $_.Title -notlike '*Security Platform*' -and $_.Operation -eq 1 -and $_.ResultCode -eq 2 } | ForEach-Object { [PSCustomObject]@{ HotFixID = if ($_.Title -match '(KB\d+)') { $matches[0] } else { 'N/A' }; Description = $_.Title; InstalledOn = $_.Date } } | Sort-Object InstalledOn -Descending | Select-Object -First 15 | Format-Table -AutoSize"
 echo.
 echo ==========================================
 echo.
@@ -34,6 +35,7 @@ set "KB1=KB5066835"
 set "KB2=KB5065789"
 set "KB3=KB5066131"
 
+REM --- Use reliable PowerShell checks to find specific updates ---
 powershell -NoProfile -Command "$S = New-Object -ComObject 'Microsoft.Update.Session'; $H = $S.CreateUpdateSearcher().GetTotalHistoryCount(); $R = $S.CreateUpdateSearcher().QueryHistory(0, $H) | Where-Object { $_.Title -like '*%KB1%*' -and $_.Operation -eq 1 -and $_.ResultCode -eq 2 }; exit !($R)"
 if %errorLevel% equ 0 (
     echo [FOUND] %KB1%
@@ -63,6 +65,7 @@ echo.
 if "%found%"=="0" (
     echo ==========================================
     echo  WARNING: None of the target updates were found!
+    echo  This is correct as they are not in the installation history.
     echo  Nothing to remove.
     echo ==========================================
     pause
