@@ -16,9 +16,10 @@ if %errorLevel% neq 0 (
     exit /b 1
 )
 
-echo Showing last 10 recently installed updates...
+echo Showing last 10 recently installed updates (newest first)...
 echo.
-powershell -Command "Get-HotFix | Sort-Object -Property InstalledOn -Descending | Select-Object -First 10 | Format-Table HotFixID, Description, InstalledOn -AutoSize"
+REM ## THIS IS THE CORRECTED LINE ##
+powershell -NoProfile -Command "Get-HotFix | Where-Object {$_.InstalledOn} | Sort-Object -Property {[datetime]$_.InstalledOn} -Descending | Select-Object -First 10 | Format-Table -AutoSize HotFixID, InstalledOn, Description"
 echo.
 echo ==========================================
 echo.
