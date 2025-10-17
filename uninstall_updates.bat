@@ -16,9 +16,9 @@ if %errorLevel% neq 0 (
     exit /b 1
 )
 
-echo Showing last 5 recently installed updates...
+echo Showing recently installed updates (sorted by date)...
 echo.
-wmic qfe get HotFixID,InstalledOn,Description /format:table | more
+wmic qfe get HotFixID,InstalledOn,Description | sort /R
 echo.
 echo ==========================================
 echo.
