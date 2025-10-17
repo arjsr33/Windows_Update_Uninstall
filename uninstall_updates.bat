@@ -16,9 +16,9 @@ if %errorLevel% neq 0 (
     exit /b 1
 )
 
-echo Showing recently installed updates (sorted by date)...
+echo Showing last 10 recently installed updates...
 echo.
-wmic qfe get HotFixID,InstalledOn,Description | sort /R
+powershell -Command "Get-HotFix | Sort-Object -Property InstalledOn -Descending | Select-Object -First 10 | Format-Table HotFixID, Description, InstalledOn -AutoSize"
 echo.
 echo ==========================================
 echo.
