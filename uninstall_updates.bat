@@ -20,8 +20,9 @@ if %errorLevel% neq 0 (
 )
 
 echo Showing last 15 recently installed updates (newest first)...
+echo NOTE: This list excludes routine Security Intelligence (Defender) updates.
 echo.
-powershell -NoProfile -Command "$Session = New-Object -ComObject 'Microsoft.Update.Session'; $Searcher = $Session.CreateUpdateSearcher(); $HistoryCount = $Searcher.GetTotalHistoryCount(); $Searcher.QueryHistory(0, $HistoryCount) | Where-Object { $_.Title -match 'KB\d+' -and $_.Operation -eq 1 -and $_.ResultCode -eq 2 } | ForEach-Object { [PSCustomObject]@{ HotFixID = if ($_.Title -match '(KB\d+)') { $matches[0] } else { 'N/A' }; Description = $_.Title; InstalledOn = $_.Date } } | Sort-Object InstalledOn -Descending | Select-Object -First 15 | Format-Table -AutoSize"
+powershell -NoProfile -Command "$Session = New-Object -ComObject 'Microsoft.Update.Session'; $Searcher = $Session.CreateUpdateSearcher(); $HistoryCount = $Searcher.GetTotalHistoryCount(); $Searcher.QueryHistory(0, $HistoryCount) | Where-Object { $_.Title -notlike '*Security Intelligence*' -and $_.Title -match 'KB\d+' -and $_.Operation -eq 1 -and $_.ResultCode -eq 2 } | ForEach-Object { [PSCustomObject]@{ HotFixID = if ($_.Title -match '(KB\d+)') { $matches[0] } else { 'N/A' }; Description = $_.Title; InstalledOn = $_.Date } } | Sort-Object InstalledOn -Descending | Select-Object -First 15 | Format-Table -AutoSize"
 echo.
 echo ==========================================
 echo.
